@@ -1,36 +1,39 @@
 PROC C_OPERATION_RAND DISPLOF
-;;**********程序功能**********
-;;螺纹二次对刀程序
-;;***************************
+;***********程序功能**********
+;*螺纹二次对刀程序
+;****************************
 
 DEF REAL DR1,DR2,DR3,DR4
 
-;++++not-sw-delete-begain++++
-CASE TOOL_SET[19] OF 0 GOTOF DDD0 1 GOTOF DDD1 2 GOTOF DDD2 DEFAULT GOTOF DDD0
-;++++not-sw-delete-end++++
+;*********************
+CASE TOOL_SET[19] OF 0 GOTOF DDD0 1 GOTOF DDD1 2 GOTOF DDD2 DEFAULT GOTOF DDD0;外螺纹   ifIsExternal
+;*********************
 
 DDD0:
 MSG("正在开至工件起点")
-;++++sw-or-sn-begain++++
-;SW:F_Z_POSITION(INI[6])
-;SN:F_Z_POSITION(INI[28])
-F_Z_POSITION(INI[6]);快速的移动到对刀起点
-;++++sw-or-sn-end++++
+;*********************
+F_Z_POSITION(INI[6]);外螺纹   ifIsExternal
+F_Z_POSITION(INI[28]);内螺纹  ifIsInternal
+;*********************
 GOTOF DDD2
 
-;++++not-sw-delete-begain++++
+;*********************
+;ifIsExternalBegin
 DDD1:
 MSG("正在开至工件中点")
 F_Z_POSITION(INI[8]);快速移动到对刀中点
 GOTOF DDD2
-;++++not-sw-delete-end++++
+;ifIsExternalEnd
+;*********************
 
 DDD2:
 MSG("X轴开至对刀起始位")
 G01 G90 X=INI[10] F=INI[55];X开至对刀起始位
-;++++not-sn-delete-begain++++
-F_Z_POSITION(INI[6])
-;++++not-sn-delete-end++++
+
+;*********************
+F_Z_POSITION(INI[6]);内螺纹  ifIsInternal
+;*********************
+
 STOPRE
 TOOL_SET[0]=$AA_IM[Z];读取对刀开始时Z轴坐标
 F_C_ANG_AT_CURNTZ_POS(TOOL_SET[0],DR4)
@@ -43,7 +46,7 @@ STOPRE
 TOOL_SET[40]=1;已执行过二次对刀的标记
 
 MSG("二次对刀已启动,请进行对刀操作")
-IF INI[109]==0;;对刀模式(zc插补0/静止对刀1)
+IF INI[109]==0;对刀模式(zc插补0/静止对刀1)
     F_ZC_START(TOOL_SET[0],INI[7],INI[5],INI[80],1)
 ELSE
     M0
